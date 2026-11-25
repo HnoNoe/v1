@@ -41,12 +41,17 @@ def formula_2_cosine(u, j):
 
 
 def formula_3_match_score(s, delta, w_s, w_delta, has_center):
-    """式三　匹配分数 p = σ(w_s·s + w_δ·δ)。
+    """式三　匹配分数 p = σ(w_s·(2s−1) + w_δ·δ)。
 
+    相似度 s ∈ [0,1] 必须先以值域中点 0.5 为决策锚点中心化（2s−1 ∈ [−1,1]）：
+    s 恒非负，若直接入 logit，则 logit ≥ 0，p 被逻辑斯谛曲线系统性托底在
+    0.5 以上——完全不相似的岗位也得 0.5+，分数丧失区分度（此为中心化修正）。
+    δ = cos(j,c₊) − cos(j,c₋) 天然以 0 为中心，不另作处理。
+    语义：s=0.5 且 δ=0 时 p=0.5（中性）；越相似/越靠近正中心 p 越趋近 1。
     has_center 为 False（缺任一类中心）时，间隔项系数取 0。
     """
     wd = w_delta if has_center else 0.0
-    return logistic(w_s * s + wd * delta)
+    return logistic(w_s * (2.0 * s - 1.0) + wd * delta)
 
 
 def interval_feature(j, c_pos, c_neg):
